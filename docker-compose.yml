@@ -61,7 +61,7 @@ services:
   homeassistant:
     build: ./balena-homeassistant/homeassistant
     ports:
-      - 80:8123
+      - 8123:8123
     privileged: true
     volumes:
       - 'ha_config:/config'
@@ -80,7 +80,7 @@ services:
     image: "causticlab/hass-configurator-docker:arm"
     restart: always
     ports:
-      - "8080:3218"
+      - "8124:3218"
     volumes:
       - 'ha_config:/hass-config'
     environment:
