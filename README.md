@@ -5,3 +5,10 @@
 * PiHole
 * WireGuard
 * HomeAssistant
+
+## Instructions
+```
+git submodule init
+git submodule update
+```
+
