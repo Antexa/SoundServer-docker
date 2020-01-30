@@ -11,6 +11,8 @@ volumes:
   snapcast:
   # BALENA HOME ASSISTANT
   ha_config:
+  # Zigbee2Mqtt
+  zigbee:
 services:
   # BALENA PIHOLE
   pihole:
@@ -105,8 +107,7 @@ services:
       - 'ha_config:/config'
     restart: always
     devices:
-      - "/dev:/dev"
-      - "/dev/serial/by-id/usb-0658_0200-if00:/dev/zwave"
+      - '/dev:/dev'
 
   mqtt:
     image: arm32v6/eclipse-mosquitto
@@ -123,3 +124,12 @@ services:
       - 'ha_config:/hass-config'
     environment:
       - HC_BASEPATH=/hass-config
+
+  # ZIGBEE
+  zigbee:
+    image: koenkk/zigbee2mqtt
+    restart: always
+    privileged: true
+    volumes:
+      - 'zigbee:/app/data'
+      - '/dev/serial/by-id/usb-Texas_Instruments_TI_CC2531_USB_CDC___0X00124B000BE6709A-if00:/dev/zigbee'
