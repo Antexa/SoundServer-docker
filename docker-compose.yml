@@ -11,6 +11,8 @@ volumes:
   snapcast:
   # BALENA HOME ASSISTANT
   ha_config:
+  # MQTT
+  mosquitto:
   # Zigbee2Mqtt
   zigbee:
 services:
@@ -106,15 +108,14 @@ services:
     volumes:
       - 'ha_config:/config'
     restart: always
-    devices:
-      - '/dev:/dev'
 
   mqtt:
     image: arm32v6/eclipse-mosquitto
     ports:
       - "1883:1883"
     restart: always
-
+    volumes:
+      - 'mosquitto:/mosquitto'
   hass-configurator:
     image: "causticlab/hass-configurator-docker:arm"
     restart: always
@@ -129,8 +130,9 @@ services:
   zigbee:
     image: koenkk/zigbee2mqtt
     restart: always
-    privileged: true
     volumes:
       - 'zigbee:/app/data'
     devices:
-      - '/dev/serial/by-id/usb-Texas_Instruments_TI_CC2531_USB_CDC___0X00124B000BE6709A-if00:/dev/zigbee'
+      - '/dev/ttyACM0:/dev/ttyACM0'
+    cap_add:
+      - SYS_RAWIO
