@@ -30,5 +30,5 @@ CMD librespot \
   --initial-volume=$SYSTEM_OUTPUT_VOLUME \
   --backend "$SPOTIFY_BACKEND" \
   --device "$SPOTIFY_DEVICE" \
-  -u "$SPOTIFY_USER" \
+  -u "$SPOTIFY_LOGIN" \
   -p "$SPOTIFY_PASSWORD"
