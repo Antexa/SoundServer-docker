@@ -1,64 +1,54 @@
 version: '2.1'
 
 volumes:
-  # BALENA PIHOLE
+  # PIHOLE
   pihole_config:
   dnsmasq_config:
-  dnscrypt_config:
-  # BALENA SOUND
+  # AUDIO
   spotifycache:
-  bluetoothcache:
   snapcast:
-  # BALENA HOME ASSISTANT
+  # HOME ASSISTANT
   ha_config:
   # MQTT
   mosquitto:
   # Zigbee2Mqtt
   zigbee:
 services:
-  # BALENA PIHOLE
+  # PIHOLE
   pihole:
-    build: ./balena-pihole/pihole
-    privileged: true
+    container_name: pihole
+    image: pihole/pihole
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "67:67/udp"
+      - "80:80/tcp"
+      - "443:443/tcp"
+    environment:
+      - TZ=Europe/Berlin
     volumes:
       - 'pihole_config:/etc/pihole'
       - 'dnsmasq_config:/etc/dnsmasq.d'
     dns:
       - '127.0.0.1'
       - '1.1.1.1'
-    network_mode: host
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped
 
-  # set pihole DNS1 and DNS2 service variables to 127.0.0.1#5053 to use dnscrypt-proxy for upstream DNS
-  dnscrypt-proxy:
-    build: ./balena-pihole/dnscrypt-proxy
-    volumes:
-      - 'dnscrypt_config:/config'
-    ports:
-      - '5053:5053/udp'
-  # BALENA SOUND
-  bluetooth-audio:
-    network_mode: host
-    restart: always
-    build: ./balena-sound/bluetooth-audio
-    privileged: true
-    labels:
-      io.balena.features.dbus: 1
-    volumes:
-      - bluetoothcache:/var/cache/bluetooth
-      - snapcast:/var/cache/snapcast
-
+  # AUDIO
   airplay:
-    build: ./balena-sound/airplay
+    container_name: airplay
+    build: ./airplay
     restart: always
     network_mode: host
     privileged: true
-    labels:
-      io.balena.features.dbus: 1
     volumes:
       - snapcast:/var/cache/snapcast
 
   spotify:
-    build: ./balena-sound/spotify
+    container_name: spotify
+    build: ./spotify
     restart: always
     network_mode: host
     privileged: true
@@ -66,21 +56,12 @@ services:
       - spotifycache:/var/cache/raspotify
       - snapcast:/var/cache/snapcast
 
-  fleet-supervisor:
-    build: ./balena-sound/fleet-supervisor
-    restart: always
-    network_mode: host
-    privileged: true
-    ports:
-      - 3000:3000
-    labels:
-      io.balena.features.supervisor-api: 1
-
   snapcast-server:
+    container_name: snapserver
     build:
-      context: ./balena-sound/snapcast-server
+      context: ./snapcast-server
       args:
-        SNAPCAST_VERSION: 0.17.1
+        SNAPCAST_VERSION: 0.18.1
     restart: always
     ports:
       - 1704:1704
@@ -89,10 +70,11 @@ services:
       - snapcast:/var/cache/snapcast
 
   snapcast-client:
+    container_name: snapclient
     build:
-      context: ./balena-sound/snapcast-client
+      context: ./snapcast-client
       args:
-        SNAPCAST_VERSION: 0.17.1
+        SNAPCAST_VERSION: 0.18.1
     restart: always
     network_mode: host
     privileged: true
@@ -101,33 +83,28 @@ services:
 
   # BALENA HOME ASSISTANT
   homeassistant:
-    build: ./balena-homeassistant/homeassistant
+    container_name: homeassistant
+    image: homeassistant/home-assistant:stable
+    environment:
+      - TZ=Europe/Berlin
     ports:
       - 8123:8123
-    privileged: true
     volumes:
       - 'ha_config:/config'
     restart: always
 
   mqtt:
+    container_name: mqtt
     image: arm32v6/eclipse-mosquitto
     ports:
       - "1883:1883"
     restart: always
     volumes:
       - 'mosquitto:/mosquitto'
-  hass-configurator:
-    image: "causticlab/hass-configurator-docker:arm"
-    restart: always
-    ports:
-      - "8124:3218"
-    volumes:
-      - 'ha_config:/hass-config'
-    environment:
-      - HC_BASEPATH=/hass-config
 
   # ZIGBEE
   zigbee:
+    container_name: zigbee2mqtt
     image: koenkk/zigbee2mqtt
     restart: always
     volumes:
