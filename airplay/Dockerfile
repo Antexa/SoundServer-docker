@@ -21,27 +21,6 @@ ENV PACKAGES=libdaemon \
              soxr \
              libconfig
 
-RUN apk --no-cache add \
-      git \
-      build-base \
-      autoconf \
-      automake \
-      libtool \
-      libdaemon-dev \
-      popt-dev \
-      libressl-dev \
-      soxr-dev \
-      avahi-dev \
-      libconfig-dev
-
-RUN apk --no-cache add \
-      libdaemon \
-      libgcc \
-      popt \
-      libressl \
-      soxr \
-      libconfig
-
 RUN apk --no-cache add ${BUILD_PACKAGES} ${PACKAGES} \
        && git clone --depth=1 --recursive https://github.com/mikebrady/shairport-sync.git \
        && cd /tmp/shairport-sync \
@@ -56,11 +35,3 @@ RUN apk --no-cache add ${BUILD_PACKAGES} ${PACKAGES} \
        && cd /tmp \
        && rm -rf /tmp/shairport-sync \
        && apk --no-cache --purge del ${BUILD_PACKAGES}
-
-ENV DEVICE_NAME Airplay Multiroom
-ENV SHAIRPORT_BACKEND "-o pipe -- /var/cache/snapcast/snapfifo"
-
-# Start AirPlay
-CMD shairport-sync \
-  -a "$DEVICE_NAME" \
-  $SHAIRPORT_BACKEND
