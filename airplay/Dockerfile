@@ -61,5 +61,6 @@ RUN apk -U add \
 COPY start.sh /start
 
 ENV AIRPLAY_NAME Docker
+ENV SHAIRPORT_BACKEND pipe -- /var/cache/snapcast/snapfifo
 
 ENTRYPOINT [ "/start" ]
